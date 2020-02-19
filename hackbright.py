@@ -33,7 +33,8 @@ def get_student_by_github(github):
 
     row = db_cursor.fetchone()
 
-    print("Student: {} {}\nGitHub account: {}".format(row[0], row[1], row[2]))
+    # print("Student: {} {}\nGitHub account: {}".format(row[0], row[1], row[2]))
+    print(f"Student: {row[0]} {row[1]}\nGithub account: {row[2]}")
 
 
 def make_new_student(first_name, last_name, github):
@@ -42,12 +43,33 @@ def make_new_student(first_name, last_name, github):
     Given a first name, last name, and GitHub account, add student to the
     database and print a confirmation message.
     """
-    pass
+    QUERY = """
+        INSERT INTO students (first_name, last_name, github)
+            VALUES (:first_name, :last_name, :github)
+        """
+
+    db.session.execute(QUERY, {'first_name': first_name,
+                               'last_name': last_name,
+                               'github': github})
+    db.session.commit()
+
+    print(f'Successfully added student: {first_name} {last_name}')
 
 
 def get_project_by_title(title):
     """Given a project title, print information about the project."""
-    pass
+
+    QUERY = """
+        SELECT title, description
+        FROM projects
+        WHERE title = :title
+        """
+
+    db_cursor = db.session.execute(QUERY, {'title': title})
+
+    row = db_cursor.fetchone()
+
+    print(f"Project Title: {row[0]}\nProject Description: {row[1]}")
 
 
 def get_grade_by_github_title(github, title):
@@ -80,8 +102,12 @@ def handle_input():
             get_student_by_github(github)
 
         elif command == "new_student":
-            first_name, last_name, github = args  # unpack!
+            first_name, last_name, github = args  # This line unpacks args
             make_new_student(first_name, last_name, github)
+
+        elif command == "project":
+            title = args[0]
+            get_project_by_title(title)
 
         else:
             if command != "quit":
@@ -91,7 +117,7 @@ def handle_input():
 if __name__ == "__main__":
     connect_to_db(app)
 
-    # handle_input()
+    handle_input()
 
     # To be tidy, we close our database connection -- though,
     # since this is where our program ends, we'd quit anyway.
