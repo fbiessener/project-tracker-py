@@ -51,7 +51,7 @@ def make_new_student(first_name, last_name, github):
     db.session.execute(QUERY, {'first_name': first_name,
                                'last_name': last_name,
                                'github': github})
-
+    
     db.session.commit()
 
     print(f'Successfully added student: {first_name} {last_name}')
@@ -138,14 +138,7 @@ def handle_input():
 
     while command != "quit":
         input_string = input("HBA Database> ")
-
-        if '"' in input_string:
-            tokens = input_string.split('"*"')
-        elif "'" in input_string:
-            tokens = input_string.split("'*'")
-        else:
-            tokens = input_string.split()
-
+        tokens = input_string.split()
         command = tokens[0]
         args = tokens[1:]
 
@@ -170,8 +163,32 @@ def handle_input():
             assign_grade(github, title, grade)
 
         elif command == "add-project":
+            print(args)
+            args = " ".join(input_string)
+            args = input_string.split("\' ")
+            # args.strip('\'')
+            print(args)
+            # for token in args:
+            #     token.strip("\'")
+            # need to find a way to strip quotation marks out of tokens
+            # currently stripping the quotation marks from description but not
+            # the first from title
+            # Getting this error if both don't have quotation marks
+            #
+            # input: add-project Weapon 'Learn a weapon' 20
+            #
+            # output:
+            # Traceback (most recent call last):
+            # File "hackbright.py", line 188, in <module>
+            # handle_input()
+            # File "hackbright.py", line 175, in handle_input
+            # title, description, max_grade = args
+            # ValueError: not enough values to unpack (expected 3, got 2)
 
+            print(args)
             title, description, max_grade = args
+            title = title.lstrip("\'")
+            description = description.strip("\'")
             add_project(title, description, max_grade)
 
         else:
@@ -182,7 +199,7 @@ def handle_input():
 if __name__ == "__main__":
     connect_to_db(app)
 
-    # handle_input()
+    handle_input()
 
     # To be tidy, we close our database connection -- though,
     # since this is where our program ends, we'd quit anyway.
