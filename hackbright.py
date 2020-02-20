@@ -51,6 +51,7 @@ def make_new_student(first_name, last_name, github):
     db.session.execute(QUERY, {'first_name': first_name,
                                'last_name': last_name,
                                'github': github})
+
     db.session.commit()
 
     print(f'Successfully added student: {first_name} {last_name}')
@@ -82,8 +83,8 @@ def get_grade_by_github_title(github, title):
             AND project_title = :title
         """
 
-    db_cursor = db.session.execute(QUERY, {'student_github': github,
-                                           'project_title': title})
+    db_cursor = db.session.execute(QUERY, {'github': github,
+                                           'title': title})
 
     row = db_cursor.fetchone()
 
@@ -92,7 +93,38 @@ def get_grade_by_github_title(github, title):
 
 def assign_grade(github, title, grade):
     """Assign a student a grade on an assignment and print a confirmation."""
-    pass
+
+    QUERY = """
+        UPDATE grades
+        SET grade = :grade
+        WHERE student_github = :github
+            AND project_title = :title
+    """
+
+    db.session.execute(QUERY, {'github': github,
+                               'title': title,
+                               'grade': grade})
+
+    db.session.commit()
+
+    print(f'Successfully assigned grade: {grade}')
+
+
+def add_project(title, description, max_grade):
+    """Add a project to the projects table and print a confirmation."""
+
+    QUERY = """
+        INSERT INTO projects (title, description, max_grade)
+            VALUES (:title, :description, :max_grade)
+    """
+
+    db.session.execute(QUERY, {'title': title,
+                               'description': description,
+                               'max_grade': max_grade})
+
+    db.session.commit()
+
+    print(f'Successfully added project titled: {title}\nDescription: {description}\nMaximum Grade: {max_grade}')
 
 
 def handle_input():
@@ -106,7 +138,14 @@ def handle_input():
 
     while command != "quit":
         input_string = input("HBA Database> ")
-        tokens = input_string.split()
+
+        if '"' in input_string:
+            tokens = input_string.split('"*"')
+        elif "'" in input_string:
+            tokens = input_string.split("'*'")
+        else:
+            tokens = input_string.split()
+
         command = tokens[0]
         args = tokens[1:]
 
@@ -125,6 +164,15 @@ def handle_input():
         elif command == "grade":
             github, title = args
             get_grade_by_github_title(github, title)
+
+        elif command == "give-grade":
+            github, title, grade = args
+            assign_grade(github, title, grade)
+
+        elif command == "add-project":
+
+            title, description, max_grade = args
+            add_project(title, description, max_grade)
 
         else:
             if command != "quit":

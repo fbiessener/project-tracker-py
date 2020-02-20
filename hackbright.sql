@@ -65,7 +65,7 @@ ALTER SEQUENCE grades_id_seq OWNED BY grades.id;
 --
 
 CREATE TABLE projects (
-	id integer NOT NULL,
+	id SERIAL PRIMARY KEY,
 	title character varying(30),
 	description text,
 	max_grade integer
